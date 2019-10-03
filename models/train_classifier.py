@@ -23,9 +23,17 @@ from sklearn.externals import joblib
 import pickle 
 
 def load_data(database_filepath):
-    # Arguments: 
-    #    database_filepath is the name of the desired table 
-    # Loads data from sqlite database, splits, outputs dataframe 
+    """
+    Loads data from sqlite database, splits, outputs dataframe 
+    
+    Args:
+        database_filepath: the name of the desired table 
+    
+    Returns: 
+        X: the features to predict the labels
+        Y: the message labels
+        category_names: the various names of message categories
+    """   
     
     engine = create_engine('sqlite:///cleaned_disaster.db')
     df = pd.read_sql_table(database_filepath, engine)
@@ -37,7 +45,15 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
-    # splits text into individual words, removes the non-informative ones, and takes words to their root
+    """
+    Splits text into individual words, removes the non-informative ones, and takes words to their root
+    
+    Args:
+        text: the text used to train/test NLP model
+
+    Returns: 
+        clean_tokens: processed text for the NLP model
+    """   
     
     text = re.sub(r"[^a-zA-Z0-9]", " ", text)
     words = word_tokenize(text)
@@ -50,9 +66,16 @@ def tokenize(text):
 
 
 def build_model():
-    # constructs NLP pipeline
-    # trains on training dataset
+    """
+    Constructs NLP pipeline
     
+    Args:
+        None
+
+    Returns:
+        A pipeline model 
+    """   
+
     pipeline = Pipeline([('vect', CountVectorizer(tokenizer=tokenize)),
                         ('tfidf' , TfidfTransformer()),
                         ('clf', RandomForestClassifier())
@@ -62,8 +85,19 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    # makes prediction on the test set, checks performance
+    """
+    Makes prediction on the test set, checks performance
     
+    Args:
+        model: the NLP model
+        X_test: the features needed to test the model
+        Y_test: the labels used to test the model
+        category_names: the various names of message category labels
+    
+    Returns: 
+        A report of the model's performance on test data
+    """   
+
     y_pred = model.predict(X_test)
 
     for i, column in enumerate(Y_test):
@@ -72,7 +106,16 @@ def evaluate_model(model, X_test, Y_test, category_names):
         
         
 def save_model(model, model_filepath):
-    # saves the trained model as a pickle file
+    """
+    Saves the trained model as a pickle file
+    
+    Args:
+        model: the trained NLP model
+        model_filepath: the desired file path for the model
+
+    Returns: 
+        None
+    """   
     
     pickle.dump(model, open(model_filepath, 'wb'))
     #loaded_model = pickle.load(open(model_filepath, 'rb'))
