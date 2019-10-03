@@ -1,5 +1,4 @@
 import sys
-# test that this actually changes
 
 import nltk
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
@@ -30,8 +29,16 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    # Loads the appropriate csv files as dataframes, joins
+    """
+    Loads the appropriate csv files as dataframes, joins them
     
+    Args:
+        messages_filepath: a filepath for the messages (tweets) 
+        categories_filepath: a filepath for the categories into which the messages are classified
+
+    Returns: 
+        A single dataframe used as an input in clean_data()
+    """    
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = pd.merge(categories, messages, how='inner', on='id')
@@ -39,10 +46,18 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
-    # Splits column containing all possible categories into separate features
-    # Binary classification for each category feature
-    # Eliminates duplicates, outputs clean dataframe
-      
+    """
+    Splits column containing all possible categories into separate features
+    Binary classification for each category feature
+    Eliminates duplicates, outputs clean dataframe
+    
+    Args:
+        df: the text df output by load_data()
+
+    Returns: 
+        A dataframe properly formatted for an NLP model
+    """   
+   
     categories_split = df["categories"].str.split(";", expand = True) 
     row = categories_split.iloc[0, :]
     category_colnames = row.apply(lambda x: x[:-2])
@@ -57,6 +72,17 @@ def clean_data(df):
     return df
     
 def save_data(df, database_filename):
+    """
+    Saves cleaned dataframe in an sqlite database
+    
+    Args:
+        df: the cleaned/formatted dataframe returned by clean_data()
+        database_filename: the desired table name in sqlite database
+
+    Returns: 
+        No objects returned
+    """   
+    
     engine = create_engine('sqlite:///cleaned_disaster.db')
     df.to_sql(database_filename, engine, index=False, if_exists='replace')    
 
